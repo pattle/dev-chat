@@ -1,0 +1,29 @@
+{
+  "name": "DevChat",
+  "preferGlobal": true,
+  "version": "0.0.1",
+  "author": "Chris Pattle <chris.pattle@gmail.com>",
+  "description": "A basic chat application",
+  "bin": {
+    "dev-chat": "./dev-chat"
+  },
+  "scripts": {
+    "start": "node ./dev-chat",
+    "predeploy": "echo This will be run before deploying the app",
+    "postdeploy": "echo This will be run after deploying the app"
+  },
+  "main": "./dev-chat",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pattle/dev-chat.git"
+  },
+  "dependencies" : {
+    "socket.io"   :  "*",
+    "express" :  "*",
+    "mysql" :  "*",
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.6"
+  }
+}

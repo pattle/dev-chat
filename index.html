@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+    
+    <title>DevChat - A chat client for developers</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/js/functions.js"></script>
+    <script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script>
+    <script>
+	var URL = window.location.protocol + "//" + window.location.host;
+	console.log("Connecting to " + URL);
+	var socket = io.connect(URL);
+
+	socket.on('connect', function()
+	{
+	    centerElement('#join-chat');
+	    $("#join-chat").fadeIn();
+	});
+
+	socket.on('updateChat', function(username, messageHTML)
+	{
+	    if(username)
+		$('#conversation').append(messageHTML);
+	    else
+		$('#conversation').append(messageHTML);
+
+	    scrollChat('#conversation');
+	    $("." + username + "-status").html('<img src="images/status.png" alt="" />')
+	});
+
+	socket.on('updateCode', function(username, data)
+	{
+	    $('#code').append('<pre><code>' + data + '</code></pre>');
+	    $('pre code').each(function(i, e) {hljs.highlightBlock(e)});
+
+	    scrollChat('#code');
+	});
+
+	socket.on('updateUsers', function(data)
+	{
+	    $('#users').empty();
+	    $.each(data, function(key, value)
+	    {
+		$('#users').append('<div><span class="' + key + '-status"><img src="images/status.png" alt="" /></span>' + key + '</div>');
+	    });
+	});
+
+	socket.on('idleUser', function(username)
+	{
+	    $("." + username + "-status").html('<img src="images/status-away.png" alt="" />')
+	});
+
+	socket.on('duplicateUser', function()
+	{
+	    $('#join-chat').fadeIn();
+
+	    $('#error-message').text('This user already exists');
+	    centerElement('#error-message', 'true');
+	    $('#error-message').fadeIn();
+	});
+
+
+	$(function()
+	{
+	    $('#chat-normal').keypress(function(e)
+	    {
+		if(e.which == 13)
+		{
+		    var message = $('#chat-normal').val();
+		    $('#chat-normal').val('');
+
+		    socket.emit('sendMessage', message, 'normal');
+		}
+	    });
+
+	    $('#chat-code').keypress(function(e)
+	    {
+		if(e.which == 13)
+		{
+		    var code = $('#chat-code').val();
+		    $('#chat-code').val('');
+
+		    socket.emit('sendMessage', code, 'code');
+		}
+	    });
+
+	    $("#chat-email").keypress(function(e)
+	    {
+		if(e.which == 13)
+		{
+		    var email = $('#chat-email').val();
+		    $('#chat-email').val('');
+		    $('#join-chat').fadeOut();
+
+		    socket.emit('addUser', email, 'room' + (Math.random()*10)+1);
+		}
+	    });
+
+	    $("#open-invite").click(function()
+	    {
+		centerElement('#invite');
+		$("#invite").show();
+	    });
+
+	    $("#invite-email").keypress(function(e)
+	    {
+		if(e.which == 13)
+		{
+		    var email = $('#invite-email').val();
+		    $('#invite-email').val('');
+		    $('#invite').fadeOut();
+
+		    socket.emit('inviteUser', email);
+		}
+	    });
+
+	    $(document).on("click", ".accept-invite", function(e)
+	    {
+		var room = $('.accept-invite span').text();
+
+		socket.emit('acceptInvite', room);
+
+		e.preventDefault();
+	    });
+	});
+
+	setInterval(function()
+	{
+	    socket.emit('heartbeat');
+	}, 60000);
+
+    </script>
+    <link type="text/css" rel="stylesheet" href="css/reset.css" media="screen" />
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/7.3/styles/default.min.css">
+    <link type="text/css" rel="stylesheet" href="css/style.css" media="screen" />
+</head>
+<body>
+
+    <div id="error-message"></div>
+
+    <!-- Open join-chat -->
+    <div id="join-chat">
+	<p>To join the chat please provide us with your email address</p>
+	<input type="text" id="chat-email" name="chat-email" placeholder="Please enter your email address" />
+    </div>
+    <!-- Close join-chat -->
+
+    <!-- Open invite -->
+    <div id="invite">
+	<p>Enter the email address of the person you wish to invite</p>
+	<input type="text" id="invite-email" name="invite-email" placeholder="Please enter their email address" />
+    </div>
+    <!-- Close invite -->
+
+    <!-- Open top -->
+    <div id="top">
+
+	<div id="users"></div>
+
+	<div id="actions">
+	    <p><a href="#" id="open-invite">Invite</a></p>
+	</div>
+
+	<div class="clearfix"></div>
+    </div>
+    <!-- Close top -->
+
+    <!-- Open conversation-holder -->
+    <div id="converstion-holder" class="holder">
+
+	<div id="conversation"></div>
+	<div style="width: 100%; height:30px;overflow:auto;">
+	    <input id="chat-normal" class="chat-field" placeholder="Send messages here..."/>
+	</div>
+
+    </div>
+    <!-- Close conversation-holder -->
+
+    <!-- Open code-holder -->
+    <div id="code-holder" class="holder">
+
+	<div id="code"></div>
+
+	<div style="width: 100%; height:30px;overflow:auto;">
+	    <input id="chat-code" class="chat-field" placeholder="Send code here..." />
+	</div>
+
+    </div>
+    <!-- Close code-holder -->
+
+    <div class="clearfix"></div>
+</body>
+</html>

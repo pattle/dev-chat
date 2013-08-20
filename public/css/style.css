@@ -1,0 +1,284 @@
+/* Import the font we are going to use */
+@import url(http://fonts.googleapis.com/css?family=Ubuntu);
+
+body
+{
+	font-family: 'Ubuntu', sans-serif;
+	background: #ffffff;
+	color: #333333;
+}
+
+a
+{
+	text-decoration: none;
+}
+
+b
+{
+	font-weight: bold;
+}
+
+pre code
+{
+	padding: 0px;
+}
+
+.left
+{
+	float: left;
+}
+
+.right
+{
+	float: right;
+}
+
+.clearfix
+{
+	clear: both;
+}
+
+#error-message
+{
+	display: none;
+	position: fixed;
+	top: 100px;
+	padding: 10px;
+	color: #ffffff;
+	background: #dc4617;
+	border: 1px solid #CACBCB;
+	z-index: 9999;
+	
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+	-moz-box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+	-webkit-box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
+
+#join-chat, #invite
+{
+	display: none;
+	position: fixed;
+	padding: 10px;
+	background: #ffffff;
+	border: 1px solid #CACBCB;
+	z-index: 9999;
+	
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+	-moz-box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+	-webkit-box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
+
+#chat-email, #invite-email
+{
+	padding: 5px 10px;
+	width: 100%;
+}
+
+#top
+{
+	padding: 5px;
+	color: #ffffff;
+	background: #333333;
+}
+
+#top #users
+{
+	float: left;
+}
+
+#top #actions
+{
+	float: right;
+}
+
+#top #actions a
+{
+	color: #ffffff;
+}
+
+.holder
+{
+	position: relative; width: 50%;
+}
+
+#converstion-holder
+{
+	float: left;
+}
+
+#converstion-holder #conversation
+{
+	padding: 10px;
+	overflow: auto;
+}
+
+#code-holder
+{
+	float: right;
+}
+
+#code-holder #code
+{
+	border-left: 1px solid #888888;
+	padding: 10px;
+	background: #272822;
+	overflow: auto;
+}
+
+.chat-time
+{
+	color: #888888;
+	font-size: 11px;
+	line-height: 19px;
+}
+
+.chat-field
+{
+	width: 100%;
+	height: 30px;
+	padding: 0 10px;
+	background: #ffffff;
+	color: #333333;
+	border-top: 1px solid #888888;
+	border-left: none;
+	border-right: none;
+	border-bottom: none;
+}
+
+#chat-code
+{
+	color: #ffffff;
+	background: #272822;
+}
+
+.notification
+{
+	color: #56bbe0;
+}
+
+pre code {
+  display: block;
+  background: #272822;
+}
+
+pre .tag,
+pre .tag .title,
+pre .keyword,
+pre .literal,
+pre .strong,
+pre .change,
+pre .winutils,
+pre .flow,
+pre .lisp .title,
+pre .clojure .built_in,
+pre .nginx .title,
+pre .tex .special {
+  color: #F92672;
+}
+
+pre code {
+  color: #DDD;
+}
+
+pre code .constant {
+	color: #66D9EF;
+}
+
+pre .code,
+pre .class .title,
+pre .header {
+	color: white;
+}
+
+pre .link_label,
+pre .attribute,
+pre .symbol,
+pre .symbol .string,
+pre .value,
+pre .regexp {
+	color: #BF79DB;
+}
+
+pre .link_url,
+pre .tag .value,
+pre .string,
+pre .bullet,
+pre .subst,
+pre .title,
+pre .emphasis,
+pre .haskell .type,
+pre .preprocessor,
+pre .ruby .class .parent,
+pre .built_in,
+pre .sql .aggregate,
+pre .django .template_tag,
+pre .django .variable,
+pre .smalltalk .class,
+pre .javadoc,
+pre .django .filter .argument,
+pre .smalltalk .localvars,
+pre .smalltalk .array,
+pre .attr_selector,
+pre .pseudo,
+pre .addition,
+pre .stream,
+pre .envvar,
+pre .apache .tag,
+pre .apache .cbracket,
+pre .tex .command,
+pre .prompt {
+  color: #A6E22E;
+}
+
+pre .comment,
+pre .java .annotation,
+pre .blockquote,
+pre .horizontal_rule,
+pre .python .decorator,
+pre .template_comment,
+pre .pi,
+pre .doctype,
+pre .deletion,
+pre .shebang,
+pre .apache .sqbracket,
+pre .tex .formula {
+  color: #75715E;
+}
+
+pre .keyword,
+pre .literal,
+pre .css .id,
+pre .phpdoc,
+pre .title,
+pre .header,
+pre .haskell .type,
+pre .vbscript .built_in,
+pre .sql .aggregate,
+pre .rsl .built_in,
+pre .smalltalk .class,
+pre .diff .header,
+pre .chunk,
+pre .winutils,
+pre .bash .variable,
+pre .apache .tag,
+pre .tex .special,
+pre .request,
+pre .status {
+  font-weight: bold;
+}
+
+pre .coffeescript .javascript,
+pre .javascript .xml,
+pre .tex .formula,
+pre .xml .javascript,
+pre .xml .vbscript,
+pre .xml .css,
+pre .xml .cdata {
+  opacity: 0.5;
+}
