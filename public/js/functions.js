@@ -78,6 +78,13 @@ function scrollChat(theElement)
 	$(theElement).scrollTop(elementHeight);
 }
 
+function showRoomUsers(e)
+{
+    $("#room-users").toggle();
+    
+    e.preventDefault();
+}
+
 $(document).ready(function()
 {
 	resizeWindows();

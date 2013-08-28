@@ -33,7 +33,7 @@ app.configure(function(){
 
 // usernames which are currently connected to the chat
 var usernames = {};
-var rooms = {};
+var rooms = new Array();
 
 io.sockets.on('connection', function (socket)
 {
@@ -51,14 +51,14 @@ io.sockets.on('connection', function (socket)
 
 	connection.query('SELECT message_type_id FROM message_types WHERE message_type_name = ?', [type], function(err, result)
 	{
-		if (err) throw err;
+	    if (err) throw err;
 
-		var message_type_id = result[0].message_type_id;
-		var aMessage  = {message_text: data, message_sent: currentTime, message_from: socket.username, room: socket.room, message_type_id: message_type_id};
-		connection.query('INSERT INTO messages SET ?', aMessage, function(err, result)
-		{
-			if (err) throw err;
-		});
+	    var message_type_id = result[0].message_type_id;
+	    var aMessage  = {message_text: data, message_sent: currentTime, message_from: socket.username, room: socket.room, message_type_id: message_type_id};
+	    connection.query('INSERT INTO messages SET ?', aMessage, function(err, result)
+	    {
+		if (err) throw err;
+	    });
 	});
 
 	var messageHTML = '<div class="' + type + '">\n';
@@ -68,9 +68,9 @@ io.sockets.on('connection', function (socket)
 
 	//Update the conversation depending on what type of message was sent
 	if(type === 'normal')
-	    io.sockets.in(socket.room).emit('updateChat', socket.username, messageHTML);
+	    io.sockets.in(socket.room).emit('updateChat', usernames[socket.username]['class_username'], messageHTML);
 	if(type === 'code')
-	    io.sockets.in(socket.room).emit('updateCode', socket.username, data);
+	    io.sockets.in(socket.room).emit('updateCode', usernames[socket.username]['class_username'], data);
     });
 
     /*
@@ -80,7 +80,7 @@ io.sockets.on('connection', function (socket)
     * @param username STRING The persons name
     * @param room STRING The name of the chat room
     */
-    socket.on('addUser', function(username, room)
+    socket.on('addUser', function(username)
     {
 	if(usernames[username])
 	{
@@ -91,31 +91,32 @@ io.sockets.on('connection', function (socket)
 	//Add the username to the socket session and store it in the array
 	socket.username = username;
 
-	usernames[username] = [];
+	var room = generateRoom();
+
+	usernames[username] = {};
+	usernames[username]['class_username'] = username.toLowerCase().replace(new RegExp('[.]', 'g'), '').replace('@', '');
 	usernames[username]['username'] = username;
-	usernames[username]['room'] = room;
 	logActivity(1);
 
 	//Add the roomt to the socket session and store it in the array
 	//Put the user into the room we created for them
-	socket.room = room;
-	rooms[room] = [];
-	rooms[room]['name'] = room;
-	rooms[room]['count'] = 1;
-	socket.join(room);
+	changeRoom(room, 'join');
 	logActivity(7);
-
+	
 	getColour(socket.username, rooms[room]['count']);
-
-	//Let the user know they have connection sucessfully 
-	socket.emit('updateChat', '', 'You have connected', 'notification');
+	
+	//Let the user know they have connection sucessfully
+	socket.emit('updateChat', '', buildNotification('You have connected'));
 
 	//Tell everyone else in the room that the new user has joined
-	socket.broadcast.to(room).emit('updateChat', '', username + ' has joined', 'notification');
+	socket.broadcast.to(room).emit('updateChat', '', buildNotification(socket.username + ' has joined'));
 
 	//Update the list of user for this room
-	socket.emit('updateUsers', usernames);
-	socket.broadcast.to(room).emit('updateUsers', usernames);
+	socket.emit('updateUsers', usernames[username], 'single');
+	io.sockets.in(room).emit('updateUsers', {users: getAllRoomUsers(room)}, 'room');
+	//socket.broadcast.to(room).emit('updateRoomCount', 4);
+	
+	socket.emit('updateRoom', room);
     });
 
     /*
@@ -126,9 +127,13 @@ io.sockets.on('connection', function (socket)
     */
     socket.on('inviteUser', function(username)
     {
+	//Get the room the person being invited is in
 	var inviteRoom = usernames[username]['room'];
-	socket.broadcast.to(inviteRoom).emit('updateChat', '', socket.username + ' has invited to join their room <a href="" class="accept-invite">Accept<span style="display: none">' + socket.room + '</span></a>', 'notification');
+	
+	//Send an invite to that room
+	socket.broadcast.to(inviteRoom).emit('updateChat', '', buildNotification(socket.username + ' has invited you to join their room <a href="" class="accept-invite">Accept<span style="display: none">' + socket.room + '</span></a> <a href="" class="reject-invite">Reject<span style="display: none">' + socket.room + '</span></a>', 'invite' + socket.room));
 
+	//Log the invite
 	logActivity(3);
     });
 
@@ -146,29 +151,26 @@ io.sockets.on('connection', function (socket)
 	var currentRoom = usernames[socket.username]['room'];
 
 	//Leave the current room and broadcast a notification
-	socket.leave(currentRoom);
-	socket.broadcast.to(currentRoom).emit('updateChat', '', socket.username + ' has left the room', 'notification');
+	socket.broadcast.to(currentRoom).emit('updateChat', '', buildNotification(socket.username + ' has left the room'));
+	
+	changeRoom(currentRoom, 'leave');
+	
 	logActivity(6);
 
-	//Update the users and the socket with the new room
-	usernames[socket.username]['room'] = inviteRoom;
-	socket.room = inviteRoom;
-	rooms[socket.room]['count']++;
+	changeRoom(inviteRoom, 'join');
 
 	getColour(socket.username, rooms[socket.room]['count']);
 
-	//Joint the new room and broadcast a notification
-	socket.join(inviteRoom);
+	socket.broadcast.to(inviteRoom).emit('updateChat', '', buildNotification(socket.username + ' has joined the room'));
+	io.sockets.in(inviteRoom).emit('updateUsers', {users: getAllRoomUsers(inviteRoom)}, 'room');
 
-	var messageHTML	= '<div class="notification">\n';
-	messageHTML += '<span class="left">' + socket.username + ' has joined the room</span>\n';
-	messageHTML += '<div class="clearfix"></div>\n';
-	messageHTML += '</div>';
-
-	socket.broadcast.to(inviteRoom).emit('updateChat', '', messageHTML);
-	socket.broadcast.to(socket.room).emit('updateUsers', usernames);
-
+	socket.emit('updateRoom', inviteRoom);
 	logActivity(7);
+    });
+    
+    socket.on('rejectInvite', function(inviteRoom)
+    {
+	socket.broadcast.to(inviteRoom).emit('updateChat', '', buildNotification(socket.username + ' has rejected the invitation'));
     });
 
     /*
@@ -177,29 +179,13 @@ io.sockets.on('connection', function (socket)
     */
     socket.on('disconnect', function()
     {
+	socket.broadcast.to(socket.room).emit('updateChat', '', buildNotification(socket.username + ' has disconnected'));
+	io.sockets.in(socket.room).emit('updateUsers', {users: getAllRoomUsers(socket.room)}, 'room');
+	
 	//Remove this user
 	delete usernames[socket.username];
-	io.sockets.emit('updateUsers', usernames);
 
-	//Update the room count and if there are no more users in the room delete it
-	if(rooms[socket.room])
-	{
-	    rooms[socket.room]['count'] = rooms[socket.room]['count'] - 1;
-	    if(rooms[socket.room]['count'] === 0)
-		delete rooms[socket.room];
-	}
-
-//		io.sockets.emit('updateUsers', usernames);
-
-	var messageHTML = '<div class="notification">\n';
-	messageHTML += '<span class="left">' + socket.username + ' has disconnected</span>\n';
-	messageHTML += '<div class="clearfix"></div>\n';
-	messageHTML += '</div>';
-	
-	socket.broadcast.emit('updateChat', '', messageHTML);
-
-	//Leave the room
-	socket.leave(socket.room);
+	changeRoom(socket.room, 'leave');
     });
 
     /*
@@ -214,7 +200,8 @@ io.sockets.on('connection', function (socket)
 	//Check to see if more than 120 second (2 minutes) has passed since the user last did something
 	//If they have been idle then trigger the idleuser() function on the frontend
 	if(socket.last_activity + 120 < currentTime)
-	    socket.emit('idleUser', socket.username);
+	    if(usernames[socket.username]['class_username'])
+		socket.emit('idleUser', usernames[socket.username]['class_username']);
     });
 
     /*
@@ -231,6 +218,102 @@ io.sockets.on('connection', function (socket)
 	    if (err) throw err;
 	});
     }
+    
+    /*
+     * generateRoom
+     * Generates a room number for a new user
+     * 
+     * @return nextRoom INT The next room number
+     */
+    function generateRoom()
+    {
+	//I MAY NEED TO RESET ARRAY KEYS BEFORE I DO THIS
+	
+	var nextRoom = 1;
+	
+	//Get number of rooms
+	var roomLength = rooms.length;
+
+	if(roomLength > 0 && rooms[roomLength-1])
+	{
+	    //Get the last room that was added.  This will be the latest
+	    var lastRoom = rooms[roomLength-1];
+	    nextRoom = lastRoom['name'] + 1;
+	}
+	
+	return nextRoom;
+    }
+    
+    /*
+     * changeRoom()
+     * Changes the room and user is in and updates
+     * 
+     * @param room INT The room number
+     * @param type STRING 'join' if the user is joining a new room, 'leave' if the user is leaving their current room
+     */
+    function changeRoom(room, type)
+    {
+	if(type === 'join')
+	{
+	    //Update the socket with the new room
+	    socket.room = room;
+	    socket.join(room);
+	    
+	    //Update the array of users
+	    usernames[socket.username]['room'] = room;
+	    
+	    //If this room doesn't exist create it, otherwise increase the user count
+	    if(!rooms[room])
+	    {
+		rooms[room] = [];
+		rooms[room]['name'] = room;
+		rooms[room]['count'] = 1;
+	    }
+	    else
+	    {
+		rooms[room]['count']++;
+	    }
+	}
+	
+	if(type === 'leave')
+	{
+	    if(rooms[room])
+	    {
+		rooms[room]['count'] = rooms[room]['count'] - 1;
+		if(rooms[room]['count'] === 0)
+		    delete rooms[room];
+	    }
+	    
+	    socket.leave(room);
+	}
+    }
+    
+    /*
+     * getAllRoomUsers()
+     * Gets all of the users in a specific room
+     * 
+     * @param INT The number of the room to check
+     * 
+     * @return OBJECT Returns an object with all the usernames in
+     */
+    function getAllRoomUsers(room)
+    {
+	var allUsers = {};
+	
+	for(var key in usernames)
+	{
+	    var obj = usernames[key];
+
+	    if(obj['room'] === room)
+	    {
+		allUsers[obj['username']] = {}
+		allUsers[obj['username']]['class_username'] = obj['class_username'];
+		allUsers[obj['username']]['username'] = obj['username'];
+	    }
+	 }
+
+	 return allUsers;
+    }
 
     /*
     * getColour(roomCount)
@@ -243,9 +326,30 @@ io.sockets.on('connection', function (socket)
     {
 	connection.query('SELECT hexcode FROM colours WHERE precedence = ?', [roomCount], function(err, result)
 	{
-	    if (err) throw err;
 	    usernames[username]['colour'] = result[0].hexcode;
 	});
+    }
+    
+    /*
+     * buildNotification()
+     * Build the HTML for a notification
+     * 
+     * @param notification STRING The notification text
+     * 
+     * @return messageHTML STRING The HTML for the notification
+     */
+    function buildNotification(notification, extraClass)
+    {
+	var className = '';
+	if(extraClass)
+	    className = ' ' + extraClass;
+
+	var messageHTML	= '<div class="notification' + className + '">\n';
+	messageHTML += '<span class="left">' + notification + '</span>\n';
+	messageHTML += '<div class="clearfix"></div>\n';
+	messageHTML += '</div>';
+	
+	return messageHTML;
     }
 
     /*

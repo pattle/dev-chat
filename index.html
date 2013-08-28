@@ -20,10 +20,7 @@
 
 	socket.on('updateChat', function(username, messageHTML)
 	{
-	    if(username)
-		$('#conversation').append(messageHTML);
-	    else
-		$('#conversation').append(messageHTML);
+	    $('#conversation').append(messageHTML);
 
 	    scrollChat('#conversation');
 	    $("." + username + "-status").html('<img src="images/status.png" alt="" />')
@@ -37,13 +34,28 @@
 	    scrollChat('#code');
 	});
 
-	socket.on('updateUsers', function(data)
+	socket.on('updateUsers', function(data, type)
 	{
-	    $('#users').empty();
-	    $.each(data, function(key, value)
+	    if(type === 'single')
 	    {
-		$('#users').append('<div><span class="' + key + '-status"><img src="images/status.png" alt="" /></span>' + key + '</div>');
-	    });
+		$('#users').empty();
+		$('#users').append('<div><span class="' + data['class_username'] + '-status status-icon"><img src="images/status.png" alt="" /></span>' + data['username'] + '</div>');
+
+	    }
+
+	    if(type === 'room')
+	    {
+
+		$('#room-users').empty();
+		var roomCount = 0;
+		$.each(data['users'], function(username, aUser)
+		{
+		    roomCount++;
+		    $('#room-users').append('<div><span class="' + aUser['class_username'] + '-status status-icon"><img src="images/status.png" alt="" /></span>' + aUser['username'] + '</div>');
+		});
+		
+		$('#room-count').text(roomCount);
+	    }
 	});
 
 	socket.on('idleUser', function(username)
@@ -58,6 +70,11 @@
 	    $('#error-message').text('This user already exists');
 	    centerElement('#error-message', 'true');
 	    $('#error-message').fadeIn();
+	});
+	
+	socket.on('updateRoom', function(room)
+	{
+	    $("#room-number").text('room' + room);
 	});
 
 
@@ -93,7 +110,7 @@
 		    $('#chat-email').val('');
 		    $('#join-chat').fadeOut();
 
-		    socket.emit('addUser', email, 'room' + (Math.random()*10)+1);
+		    socket.emit('addUser', email);
 		}
 	    });
 
@@ -120,6 +137,19 @@
 		var room = $('.accept-invite span').text();
 
 		socket.emit('acceptInvite', room);
+		
+		$(".invite" + room).remove();
+
+		e.preventDefault();
+	    });
+	    
+	    $(document).on("click", ".reject-invite", function(e)
+	    {
+		var room = $(this).children('span').text();
+
+		socket.emit('rejectInvite', room);
+		
+		$(".invite" + room).remove();
 
 		e.preventDefault();
 	    });
@@ -129,7 +159,6 @@
 	{
 	    socket.emit('heartbeat');
 	}, 60000);
-
     </script>
     <link type="text/css" rel="stylesheet" href="css/reset.css" media="screen" />
     <link rel="stylesheet" href="http://yandex.st/highlightjs/7.3/styles/default.min.css">
@@ -159,7 +188,10 @@
 	<div id="users"></div>
 
 	<div id="actions">
-	    <p><a href="#" id="open-invite">Invite</a></p>
+		<a href="#" id="open-invite">Invite</a>
+		<div id="room-users"></div>
+		<a href="#" id="room-count" onclick="showRoomUsers(event);"></a>
+		<a href="#" id="room-number"></a> 
 	</div>
 
 	<div class="clearfix"></div>
@@ -170,7 +202,7 @@
     <div id="converstion-holder" class="holder">
 
 	<div id="conversation"></div>
-	<div style="width: 100%; height:30px;overflow:auto;">
+	<div style="width: 100%; height:30px;">
 	    <input id="chat-normal" class="chat-field" placeholder="Send messages here..."/>
 	</div>
 
@@ -182,7 +214,7 @@
 
 	<div id="code"></div>
 
-	<div style="width: 100%; height:30px;overflow:auto;">
+	<div style="width: 100%; height:30px;">
 	    <input id="chat-code" class="chat-field" placeholder="Send code here..." />
 	</div>
 

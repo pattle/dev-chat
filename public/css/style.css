@@ -65,7 +65,6 @@ pre code
 	background: #ffffff;
 	border: 1px solid #CACBCB;
 	z-index: 9999;
-	
 	border-radius: 5px;
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;
@@ -77,7 +76,7 @@ pre code
 #chat-email, #invite-email
 {
 	padding: 5px 10px;
-	width: 100%;
+	width: 94%;
 }
 
 #top
@@ -281,4 +280,62 @@ pre .xml .vbscript,
 pre .xml .css,
 pre .xml .cdata {
   opacity: 0.5;
+}
+
+.accept-invite
+{
+    color: green;
+}
+
+.reject-invite
+{
+    color: red;
+}
+
+#top
+{
+    padding: 0;
+}
+
+#users
+{
+    padding: 5px;
+}
+
+.status-icon
+{
+    margin-right: 5px;
+}
+
+#actions
+{
+    width: 50%;
+}
+
+#actions a
+{
+    float: right;
+    display: block;
+    padding: 5px;
+}
+
+#actions a:hover
+{
+    background: #555555;
+}
+
+#room-count
+{
+    background: orange;
+}
+
+#room-users
+{
+    display: none;
+    position: absolute;
+    top: 27px;
+    right: 0px;
+    padding: 5px;
+    background: #555555;
+    z-index: 99;
 }
