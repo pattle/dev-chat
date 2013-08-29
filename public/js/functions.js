@@ -85,6 +85,13 @@ function showRoomUsers(e)
     e.preventDefault();
 }
 
+function openSmileys(e)
+{
+    $("#smileys").toggle();
+    
+    e.preventDefault();
+}
+
 $(document).ready(function()
 {
 	resizeWindows();

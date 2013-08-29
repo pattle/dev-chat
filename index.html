@@ -23,7 +23,7 @@
 	    $('#conversation').append(messageHTML);
 
 	    scrollChat('#conversation');
-	    $("." + username + "-status").html('<img src="images/status.png" alt="" />')
+	    $("." + username + "-status").html('<img src="images/status.png" alt="Available" />')
 	});
 
 	socket.on('updateCode', function(username, data)
@@ -39,7 +39,7 @@
 	    if(type === 'single')
 	    {
 		$('#users').empty();
-		$('#users').append('<div><span class="' + data['class_username'] + '-status status-icon"><img src="images/status.png" alt="" /></span>' + data['username'] + '</div>');
+		$('#users').append('<div><span class="' + data['class_username'] + '-status status-icon"><img src="images/status.png" alt="Available" /></span>' + data['username'] + '</div>');
 
 	    }
 
@@ -51,7 +51,7 @@
 		$.each(data['users'], function(username, aUser)
 		{
 		    roomCount++;
-		    $('#room-users').append('<div><span class="' + aUser['class_username'] + '-status status-icon"><img src="images/status.png" alt="" /></span>' + aUser['username'] + '</div>');
+		    $('#room-users').append('<div><span class="' + aUser['class_username'] + '-status status-icon"><img src="images/status.png" alt="Available" /></span>' + aUser['username'] + '</div>');
 		});
 		
 		$('#room-count').text(roomCount);
@@ -60,7 +60,7 @@
 
 	socket.on('idleUser', function(username)
 	{
-	    $("." + username + "-status").html('<img src="images/status-away.png" alt="" />')
+	    $("." + username + "-status").html('<img src="images/status-away.png" alt="Away" />')
 	});
 
 	socket.on('duplicateUser', function()
@@ -202,8 +202,49 @@
     <div id="converstion-holder" class="holder">
 
 	<div id="conversation"></div>
-	<div style="width: 100%; height:30px;">
+	<div id="chat-normal-holder">
 	    <input id="chat-normal" class="chat-field" placeholder="Send messages here..."/>
+	    <a href="#" id="open-smileys" onclick="openSmileys(event)"><img src="images/smileys/smiley.png" alt="Smileys" /></a>
+	    <div id="smileys">
+		<ul>
+		    <li><a href=""><img src="images/smileys/smiley.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-angel.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-confuse.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-cool.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-cry.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-curly.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-draw.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-eek.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-evil.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-fat.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-glass.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-grin.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-grumpy.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-kiss.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-kitty.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-lol.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-mad.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-money.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-mr-green.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-nerd.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-neutral.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-razz.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-red.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-roll.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-sad.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-shock.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-sleep.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-slim.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-squint.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-surprise.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-sweat.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-twist.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-upset.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-wink.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-yell.png" alt="Smileys" /></a></li>
+		    <li><a href=""><img src="images/smileys/smiley-zipper.png" alt="Smileys" /></a></li>
+		</ul>
+	    </div>
 	</div>
 
     </div>
@@ -214,7 +255,7 @@
 
 	<div id="code"></div>
 
-	<div style="width: 100%; height:30px;">
+	<div id="chat-code-holder">
 	    <input id="chat-code" class="chat-field" placeholder="Send code here..." />
 	</div>
 
