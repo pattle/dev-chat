@@ -87,7 +87,9 @@
 		    var message = $('#chat-normal').val();
 		    $('#chat-normal').val('');
 
-		    socket.emit('sendMessage', message, 'normal');
+			//Make sure the message is not just whitespace
+			if($.trim(message) != '')
+				socket.emit('sendMessage', message, 'normal');
 		}
 	    });
 
@@ -98,7 +100,9 @@
 		    var code = $('#chat-code').val();
 		    $('#chat-code').val('');
 
-		    socket.emit('sendMessage', code, 'code');
+			//Make sure the message is not just whitespace
+			if($.trim(code) != '')
+				socket.emit('sendMessage', code, 'code');
 		}
 	    });
 
